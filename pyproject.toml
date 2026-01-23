@@ -3,26 +3,23 @@ name = "nchs-intelligence-engine"
 version = "0.1.0"
 description = "NCHS Universal Strategic Intelligence Agent"
 readme = "README.md"
-
-# CHANGE 1: Restrict Python to versions CrewAI actually supports
 requires-python = ">=3.10, <3.13"
 
 dependencies = [
     "crewai[tools]>=1.8.0",
-    "langchain-openai>=1.1.7",
+    
+    # FIX: Downgrade this to 0.3.x to allow for the older OpenAI SDK
+    "langchain-openai==0.3.3", 
+    
     "streamlit>=1.53.1",
     "python-pptx>=1.0.2",
     "python-docx>=1.2.0",
-    
-    # CHANGE 2: Loosen this version so CrewAI can use its preferred version
-    "python-dotenv>=1.1.0", 
-    
+    "python-dotenv>=1.1.0",
     "tavily-python>=0.7.19",
     "pytube>=15.0.0",
     "youtube-transcript-api>=1.2.3",
     "reportlab>=4.4.9",
 ]
 
-# CHANGE 3: Tell uv to ONLY resolve for your active environment
 [tool.uv]
 environments = ["python_version == '3.12'"]
