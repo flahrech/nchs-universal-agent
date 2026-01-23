@@ -1,116 +1,104 @@
 import streamlit as st
 import os
-import ssl
-from dotenv import load_dotenv
-from crewai import Agent, Task, Crew, Process
-from crewai_tools import TavilySearchTool, YoutubeVideoSearchTool
+from crewai import Agent, Task, Crew
+from crewai_tools import TavilySearchTool
 from pptx import Presentation
-from pptx.util import Inches, Pt
+from pptx.util import Pt
 
-# --- 1. SYSTEM CONFIGURATION ---
-load_dotenv()
-try:
-    ssl._create_default_https_context = ssl._create_unverified_context
-except:
-    pass
-os.environ["OTEL_SDK_DISABLED"] = "true"
+# --- 1. DATA: TOP 20 PEDIATRIC HOSPITALS (US News & World Report Style) ---
+TOP_20_HOSPITALS = [
+    "Cincinnati Children's", "Boston Children's", "CHOP", "Texas Children's", 
+    "Children's Hospital Los Angeles", "Nationwide Children's", "Children's National",
+    "UPMC Children's Pittsburgh", "Seattle Children's", "Johns Hopkins Children's",
+    "Stanford Children's", "Colorado Children's", "Children's Healthcare of Atlanta",
+    "Riley Children's", "St. Louis Children's", "Phoenix Children's",
+    "Nicklaus Children's (NCHS)", "Primary Children's", "Duke Children's", "Ann & Robert H. Lurie"
+]
 
-# --- 2. TERMINAL-STYLE CALLBACK ---
+STRATEGIC_FOCUS_AREAS = [
+    "Clinical Excellence & Safety", "Operational Efficiency", 
+    "Financial Sustainability", "Patient/Family Experience", 
+    "Nursing Retention & Culture", "Digital Health & AI Integration"
+]
+
+# --- 2. THE TERMINAL LOG HANDLER ---
 class StreamlitCallbackHandler:
     def __init__(self, container):
         self.container = container
-
     def on_step(self, step):
-        """Pipes agent terminal logs directly to the web UI."""
         with self.container:
-            # Check if this is an Action (Agent thinking/using tool)
             if hasattr(step, 'tool'):
-                st.markdown(f"**⚙️ TERMINAL > EXECUTING TOOL:** `{step.tool}`")
-                # Using code block to mimic VS Code terminal look
+                st.markdown(f"**⚙️ TERMINAL >** `{step.tool}`")
                 st.code(f"Thought: {getattr(step, 'thought', 'Analyzing...')}", language="text")
-            
-            # Check if this is a Result (Data coming back)
-            elif hasattr(step, 'result'):
-                with st.expander("📥 STDOUT > VIEW TOOL OUTPUT", expanded=False):
-                    st.code(str(step.result), language="markdown")
 
-# --- 3. PPT GENERATOR ---
-def create_professional_ppt(ai_content, topic):
-    prs = Presentation()
-    slide = prs.slides.add_slide(prs.slide_layouts[0])
-    slide.shapes.title.text = topic.upper()
-    slide.placeholders[1].text = "NCHS Executive Briefing"
-    
-    # Simple split by double newlines or headers for slides
-    sections = str(ai_content).split('##')
-    for section in sections:
-        if len(section.strip()) < 10: continue
-        slide = prs.slides.add_slide(prs.slide_layouts[1])
-        lines = section.strip().split('\n')
-        slide.shapes.title.text = lines[0].replace('*', '').strip()
-        body = "\n".join(lines[1:]).replace('*', '').strip()
-        tf = slide.placeholders[1].text_frame
-        tf.text = body
-    
-    path = "NCHS_Briefing.pptx"
-    prs.save(path)
-    return path
-
-# --- 4. UI SETUP ---
-st.set_page_config(page_title="NCHS Intelligence", page_icon="🧠", layout="wide")
-st.title("🧠 NCHS Universal Intelligence Agent")
+# --- 3. UI SETUP ---
+st.set_page_config(page_title="NCHS Benchmark Portal", layout="wide")
+st.title("🏥 NCHS Strategic Benchmarking Portal")
 
 with st.sidebar:
-    st.header("Research Parameters")
-    research_topic = st.text_area("Objective", placeholder="e.g., Pediatric AI trends...")
-    yt_url = st.text_input("YouTube Source (URL)")
+    st.header("1. Define Scope")
+    research_topic = st.text_input("Primary Research Objective", "Pediatric Care Pathways")
+    
+    st.header("2. Select Peers to Benchmark")
+    selected_hospitals = st.multiselect(
+        "Select up to 5 Peer Institutions", 
+        options=TOP_20_HOSPITALS,
+        default=["CHOP", "Boston Children's"]
+    )
+    
+    st.header("3. Strategic Focus")
+    focus_area = st.selectbox("Focus Area", STRATEGIC_FOCUS_AREAS)
+    
+    st.divider()
+    st.caption("Professional Plan Active | Always-On")
 
-# --- 5. EXECUTION ---
-if st.button("🚀 Launch Research Mission"):
-    if not research_topic:
-        st.error("Please enter a research objective!")
+# --- 4. EXECUTION ---
+if st.button("🚀 Run Comparative Analysis"):
+    if not research_topic or not selected_hospitals:
+        st.error("Please provide a topic and select at least one hospital.")
     else:
-        # Create a "Terminal" area for the live logs
-        st.subheader("💻 Live Agent Terminal")
+        peer_list = ", ".join(selected_hospitals)
+        
+        # UI Setup for Logs
+        st.subheader("💻 Live Analysis Stream")
         terminal_container = st.container(border=True)
         handler = StreamlitCallbackHandler(terminal_container)
 
-        with st.status("🤖 Agents are working...", expanded=True) as status:
-            search_tool = TavilySearchTool()
-            tools = [search_tool]
-            if yt_url: tools.append(YoutubeVideoSearchTool(youtube_video_url=yt_url))
-
+        with st.status("🤖 AI Research Team Assembling...", expanded=True) as status:
             researcher = Agent(
-                role='Researcher', 
-                goal=f'Research {research_topic}', 
-                backstory='NCHS Analyst.', tools=tools, verbose=True
+                role='Comparative Analyst',
+                goal=f'Compare {research_topic} across {peer_list} with a focus on {focus_area}.',
+                backstory='Specialist in hospital quality data and market intelligence.',
+                tools=[TavilySearchTool()], verbose=True
             )
+            
             writer = Agent(
-                role='Writer', 
-                goal='Draft memo.', 
-                backstory='NCHS Comms.', verbose=True
+                role='Executive Strategist',
+                goal='Draft a board-ready comparative briefing.',
+                backstory='NCHS Strategic Communications expert.',
+                verbose=True
             )
 
-            t1 = Task(description=f"Research {research_topic}.", agent=researcher, expected_output="Data.")
-            t2 = Task(description=f"Draft memo. Use ## for headers.", agent=writer, context=[t1], expected_output="Clean memo.")
+            t1 = Task(
+                description=f"Analyze {research_topic} at {peer_list}. Specifically look for data related to {focus_area}.",
+                agent=researcher,
+                expected_output="A structured comparison of peer initiatives."
+            )
+            
+            t2 = Task(
+                description=f"Create a memo comparing NCHS to {peer_list} regarding {research_topic}. Use '##' for slide headers.",
+                agent=writer,
+                context=[t1],
+                expected_output="Final strategic memo."
+            )
 
             crew = Crew(agents=[researcher, writer], tasks=[t1, t2], step_callback=handler.on_step)
             result = crew.kickoff()
-            status.update(label="✅ Mission Complete", state="complete")
+            status.update(label="✅ Analysis Complete", state="complete")
 
-        # --- 6. TABS (Your preferred layout) ---
-        st.divider()
-        tab1, tab2 = st.tabs(["📝 Executive Summary", "🔍 Technical Logs"])
-
+        # --- 5. TABS ---
+        tab1, tab2 = st.tabs(["📝 Strategic Memo", "🔍 Raw Peer Data"])
         with tab1:
-            # Fixing formatting: Ensure markdown renders correctly
-            st.markdown(result.raw) 
-            
-            ppt_path = create_professional_ppt(result.raw, research_topic)
-            with open(ppt_path, "rb") as f:
-                st.download_button("📂 Download PPT Briefing", f, file_name=ppt_path)
-
+            st.markdown(result.raw)
         with tab2:
-            st.info("Full history of agent reasoning and tool outputs.")
-            # Displaying the raw researcher output in a terminal-style code block
-            st.code(result.tasks_output[0].raw, language="text")
+            st.code(result.tasks_output[0].raw)
