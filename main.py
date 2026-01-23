@@ -49,12 +49,20 @@ t2 = Task(
 )
 
 # Execution
+# Execution
 if __name__ == "__main__":
     nchs_crew = Crew(agents=[researcher, writer], tasks=[t1, t2])
     print(f"### Starting Research on: {TOPIC} ###")
+    
+    # result is a CrewOutput object
     result = nchs_crew.kickoff()
     
     with open("Universal_Report.md", "w") as f:
-        f.write(str(result))
+        f.write("# NCHS STRATEGIC INTELLIGENCE REPORT\n\n")
+        f.write("## 1. FINAL EXECUTIVE MEMO\n")
+        f.write(result.raw) # This is the final writer output
+        
+        f.write("\n\n---\n## 2. UNDERLYING RESEARCH DATA (AUDIT TRAIL)\n")
+        f.write(result.tasks_output[0].raw) # This is the raw researcher output
     
-    print("\n\nDone! Report saved to Universal_Report.md")
+    print("\n\nDone! Comprehensive Report saved to Universal_Report.md")
