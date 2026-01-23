@@ -1,23 +1,26 @@
 [project]
 name = "nchs-intelligence-engine"
 version = "0.1.0"
-description = "Add your description here"
+description = "NCHS Universal Strategic Intelligence Agent"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "crewai-tools>=1.6.1",
-    "crewai[tools]>=1.6.1",
+    "crewai[tools]>=1.8.0",         # Updated for 2026 async and streaming features
     "langchain-openai>=1.1.7",
+    "streamlit>=1.53.1",
+    "python-pptx>=1.0.2",
     "python-docx>=1.2.0",
     "python-dotenv>=1.2.1",
-    "python-pptx>=1.0.2",
-    "pytube>=15.0.0",
-    "reportlab>=4.4.9",
-    "streamlit>=1.53.1",
     "tavily-python>=0.7.19",
+    "pytube>=15.0.0",
     "youtube-transcript-api>=1.2.3",
+    "reportlab>=4.4.9",
 ]
 
 [build-system]
 requires = ["uv_build>=0.9.26,<0.10.0"]
 build-backend = "uv_build"
+
+[tool.uv]
+# Optional: Use this to ensure a clean source layout for production
+package = true
