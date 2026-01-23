@@ -1,0 +1,23 @@
+[project]
+name = "nchs-intelligence-engine"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "crewai-tools>=1.6.1",
+    "crewai[tools]>=1.6.1",
+    "langchain-openai>=1.1.7",
+    "python-docx>=1.2.0",
+    "python-dotenv>=1.2.1",
+    "python-pptx>=1.0.2",
+    "pytube>=15.0.0",
+    "reportlab>=4.4.9",
+    "streamlit>=1.53.1",
+    "tavily-python>=0.7.19",
+    "youtube-transcript-api>=1.2.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"

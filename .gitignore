@@ -1,0 +1,14 @@
+# 1. Private Credentials (The most important part!)
+.env
+
+# 2. Virtual Environment (Don't upload 158 packages to Git)
+nchs_env/
+.venv/
+
+# 3. Python Cache (System clutter)
+__pycache__/
+*.py[cod]
+
+# 4. Local Deliverables (Large presentation files)
+*.pptx
+*.md
