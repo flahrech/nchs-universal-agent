@@ -419,18 +419,29 @@ st.markdown("""
     /* Section headers */
     h2, h3 { color: #003865 !important; }
 
-    /* Sidebar styling */
+    /* Sidebar background */
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #003865 0%, #005b99 100%);
     }
-    section[data-testid="stSidebar"] * { color: white !important; }
-    section[data-testid="stSidebar"] .stSelectbox label,
-    section[data-testid="stSidebar"] .stMultiSelect label,
-    section[data-testid="stSidebar"] .stTextInput label { 
-        color: #a8d4e6 !important; 
-        font-size: 0.75rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+
+    /* Sidebar — labels, markdown, captions: white text */
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] .stMarkdown p,
+    section[data-testid="stSidebar"] .stCaption p,
+    section[data-testid="stSidebar"] .stCheckbox label,
+    section[data-testid="stSidebar"] .stRadio label,
+    section[data-testid="stSidebar"] h3 {
+        color: white !important;
+    }
+
+    /* Sidebar — input/select interiors keep dark text on white bg */
+    section[data-testid="stSidebar"] [data-baseweb="select"] [data-baseweb="tag"] span,
+    section[data-testid="stSidebar"] [data-baseweb="select"] [class*="placeholder"],
+    section[data-testid="stSidebar"] [data-baseweb="select"] [class*="singleValue"],
+    section[data-testid="stSidebar"] [data-baseweb="select"] [class*="option"],
+    section[data-testid="stSidebar"] input {
+        color: #1a1a1a !important;
     }
 
     /* Primary focus badge */
@@ -534,25 +545,31 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # Primary Focus (single, required)
+    # Primary Focus (single, required) — use key to persist across reruns
     st.markdown("**🎯 Primary Focus** *(required)*")
     primary_focus = st.selectbox(
         "Primary focus",
         options=STRATEGIC_FOCUS_AREAS,
+        key="primary_focus_select",
         label_visibility="collapsed"
     )
 
-    # Secondary Focus (multi, optional)
+    # Secondary Focus (multi, optional) — exclude selected primary to avoid conflicts
     st.markdown("**➕ Secondary Focus** *(optional)*")
     secondary_options = [f for f in STRATEGIC_FOCUS_AREAS if f != primary_focus]
+    # Filter out any stale secondary values that now match primary
     secondary_focus = st.multiselect(
         "Secondary focus",
         options=secondary_options,
-        max_selections=3,
+        default=[
+            v for v in st.session_state.get("secondary_focus_select", [])
+            if v in secondary_options
+        ],
+        key="secondary_focus_select",
         label_visibility="collapsed"
     )
     if secondary_focus:
-        st.caption(f"Enriching analysis with: {', '.join(secondary_focus)}")
+        st.caption(f"Enriching with: {', '.join(secondary_focus)}")
 
     st.markdown("---")
 
