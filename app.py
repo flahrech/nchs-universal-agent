@@ -52,7 +52,7 @@ st.title("🏥 NCHS Strategic Benchmarking Portal")
 if "analysis_history" not in st.session_state:
     st.session_state.analysis_history = []
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []   # [{role, content}]
+    st.session_state.chat_history = []
 if "analysis_done" not in st.session_state:
     st.session_state.analysis_done = False
 if "last_result_raw" not in st.session_state:
@@ -154,10 +154,11 @@ Be direct, strategic, and board-ready in your response.
             f"- Include specific data points, percentages, financials, or stats where available\n"
             f"- Reference specific peer hospitals by name\n"
             f"- Provide 2-3 actionable recommendations for NCHS\n"
-            f"- Be formatted with clear headers using ##"
+            f"- Be formatted with clear headers using ##\n"
+            f"- NEVER write '[As above]' or any placeholder — always write the full response"
         ),
         agent=followup_agent,
-        expected_output="A data-rich, board-ready strategic response with headers and recommendations."
+        expected_output="A complete, data-rich, board-ready strategic response with headers and recommendations. No placeholders."
     )
 
     followup_crew = Crew(
@@ -202,7 +203,7 @@ if st.button("🚀 Run Comparative Analysis"):
                 verbose=True,
                 memory=True
             )
-            
+
             writer = Agent(
                 role='Executive Strategist & Communications Director',
                 goal='Draft a data-rich, board-ready executive memo with financials, stats, and strategic recommendations.',
@@ -212,6 +213,9 @@ if st.button("🚀 Run Comparative Analysis"):
                     'Your memos always include: key statistics, financial comparisons, performance benchmarks, '
                     'competitive gaps, and 3-5 prioritized strategic recommendations. '
                     'You use tables where helpful and always cite specific numbers. '
+                    'IMPORTANT: You ALWAYS write the full memo content. You NEVER use placeholders like '
+                    '"[As above]", "[See above]", "[Insert data]", or any similar shorthand. '
+                    'Every section must be fully written out with complete sentences and real data. '
                     + (f'Build on prior analyses where relevant:\n{memory_context}' if memory_context else '')
                 ),
                 verbose=True,
@@ -230,45 +234,58 @@ if st.button("🚀 Run Comparative Analysis"):
                     f"5. **Research & grants**: NIH funding, active clinical trials, research output\n"
                     f"6. **Workforce**: nursing turnover rates, Magnet status, recruitment programs\n"
                     f"7. **Rankings & recognition**: US News rankings, Leapfrog scores, accreditations\n\n"
-                    f"Be specific. Use real numbers. Avoid generic statements.\n"
+                    f"Be specific. Use real numbers. Avoid generic statements. "
+                    f"Do NOT use placeholders — write all findings in full.\n"
                     + (f"Prior context to build upon:\n{memory_context}" if memory_context else "")
                 ),
                 agent=researcher,
                 expected_output=(
                     "A detailed, data-rich comparison matrix covering financials, clinical metrics, operations, "
-                    "strategic initiatives, and rankings for each peer institution."
+                    "strategic initiatives, and rankings for each peer institution. All sections fully written, no placeholders."
                 )
             )
-            
+
             t2 = Task(
                 description=(
-                    f"Using the research data provided, write a board-ready Executive Strategic Memo for NCHS leadership.\n\n"
+                    f"Using ONLY the research data provided to you in context from the researcher, "
+                    f"write a COMPLETE, FULLY WRITTEN board-ready Executive Strategic Memo for NCHS leadership.\n\n"
+                    f"CRITICAL RULES:\n"
+                    f"- NEVER write '[As above]', '[See above]', '[Insert]', or ANY placeholder text\n"
+                    f"- NEVER reference a previous section with shorthand — always restate and expand the data\n"
+                    f"- Every section must be fully written with complete sentences, real numbers, and specific insights\n"
+                    f"- If a data point was mentioned in the research, include it explicitly in the relevant section\n\n"
                     f"Topic: {research_topic} | Focus: {focus_area} | Peers: {peer_list}\n\n"
-                    f"Structure the memo with these sections using '##' headers:\n\n"
+                    f"Write every one of these sections IN FULL using '##' headers:\n\n"
                     f"## Executive Summary\n"
-                    f"3-4 sentence high-impact overview with the most important numbers and findings.\n\n"
+                    f"3-4 sentence high-impact overview with the most critical numbers and findings.\n\n"
                     f"## Peer Performance Snapshot\n"
-                    f"A comparative table or structured breakdown showing key metrics side-by-side for each peer.\n\n"
+                    f"A comparative breakdown showing key metrics side-by-side for each peer institution. "
+                    f"Include a markdown table where possible.\n\n"
                     f"## Financial Benchmarks\n"
-                    f"Revenue, margins, capital investments — how does NCHS compare?\n\n"
+                    f"Write out revenue figures, operating margins, and capital investments for each peer. "
+                    f"Explicitly compare to NCHS where data is available.\n\n"
                     f"## Clinical Quality & Safety Metrics\n"
-                    f"Readmission rates, safety grades, HCAHPS, mortality indices, rankings.\n\n"
+                    f"Write out readmission rates, safety grades, HCAHPS scores, mortality indices, and rankings "
+                    f"for each peer. Identify top and bottom performers.\n\n"
                     f"## Strategic Initiatives & Innovation\n"
-                    f"What are peers investing in? AI, digital health, care pathways, research programs?\n\n"
+                    f"Detail what each peer is investing in — AI programs, digital health, care pathway redesigns, "
+                    f"research expansions. Be specific about programs and dollar amounts where known.\n\n"
                     f"## Competitive Gaps & Opportunities\n"
-                    f"Where is NCHS behind? Where does NCHS lead? Be specific.\n\n"
+                    f"Explicitly state where NCHS is behind peers and where NCHS leads. Use specific metrics.\n\n"
                     f"## Strategic Recommendations for NCHS\n"
-                    f"5 prioritized, actionable recommendations with rationale and expected impact.\n\n"
+                    f"Write 5 fully explained, prioritized recommendations. Each must include: the action, "
+                    f"the rationale based on peer data, and the expected impact.\n\n"
                     f"## Key Data Points at a Glance\n"
-                    f"Bullet list of the 8-10 most important statistics from this analysis.\n\n"
-                    f"Use '##' for all headers. Include real numbers throughout. Write for a C-suite audience."
+                    f"8-10 bullet points of the most important statistics and findings from this entire analysis.\n\n"
+                    f"Write for a C-suite audience. Use real numbers throughout."
                     + (f"\n\nReference and build upon prior analyses where relevant:\n{memory_context}" if memory_context else "")
                 ),
                 agent=writer,
                 context=[t1],
                 expected_output=(
-                    "A complete, data-rich executive memo with financial comparisons, clinical benchmarks, "
-                    "competitive analysis, and 5 strategic recommendations — formatted for board presentation."
+                    "A complete, fully written executive memo with all 8 sections populated with real data, "
+                    "financial comparisons, clinical benchmarks, competitive analysis, and 5 strategic recommendations. "
+                    "Zero placeholders. Formatted for board presentation."
                 )
             )
 
@@ -295,7 +312,7 @@ if st.button("🚀 Run Comparative Analysis"):
         st.session_state.last_focus = focus_area
         st.session_state.last_topic = research_topic
         st.session_state.analysis_done = True
-        st.session_state.chat_history = []  # reset chat on new analysis
+        st.session_state.chat_history = []
 
         summary_snippet = result.raw[:300].replace("\n", " ") + "..." if len(result.raw) > 300 else result.raw
         st.session_state.analysis_history.append({
@@ -305,11 +322,14 @@ if st.button("🚀 Run Comparative Analysis"):
             "summary": summary_snippet
         })
 
-# --- 9. RESULTS + CHAT (shown after analysis) ---
+# --- 9. RESULTS + CHAT ---
 if st.session_state.analysis_done:
     tab1, tab2, tab3 = st.tabs(["📝 Executive Memo", "🔍 Raw Peer Data", "💬 Follow-Up Chat"])
 
     with tab1:
+        # Guard against placeholder output — show warning if detected
+        if "[As above]" in st.session_state.last_result_raw or len(st.session_state.last_result_raw) < 200:
+            st.warning("⚠️ The memo output appears incomplete. Try running the analysis again.")
         st.markdown(st.session_state.last_result_raw)
 
     with tab2:
@@ -319,7 +339,6 @@ if st.session_state.analysis_done:
         st.subheader("💬 Continue the Analysis")
         st.caption("Ask follow-up questions, request deeper dives, or explore specific data points.")
 
-        # Suggested follow-ups
         st.markdown("**💡 Suggested Questions:**")
         cols = st.columns(2)
         for i, suggestion in enumerate(SUGGESTED_FOLLOWUPS):
@@ -333,12 +352,10 @@ if st.session_state.analysis_done:
 
         st.divider()
 
-        # Chat history display
         for message in st.session_state.chat_history:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        # Free-form input
         if prompt := st.chat_input("Ask a follow-up question about the benchmarking analysis..."):
             st.session_state.chat_history.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
