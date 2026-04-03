@@ -708,8 +708,10 @@ if run_button:
                     f'Your memos have shaped $100M+ investment decisions. '
                     f'You write with clarity, authority, and precision. '
                     f'Your secret: you always connect peer data directly to NCHS opportunities. '
-                    f'You NEVER write "[As above]", "[See above]", or any placeholder — '
-                    f'every word is written in full. '
+                    f'You NEVER write "[As above]", "(The above", "(As above", "[See above]", '
+                    f'or ANY phrase that references prior content instead of writing it out. '
+                    f'You treat every section as if it is the first and only thing the reader will see. '
+                    f'every word is written in full from scratch. '
                     f'You know that a great memo shows both what peers are doing AND '
                     f'the specific numbers that prove it works. '
                     f'Your primary topic is "{research_topic}". '
@@ -884,13 +886,22 @@ if st.session_state.analysis_done:
     with tab1:
 
         # Memo health check
-        if (
-            "[As above]" in st.session_state.last_result_raw
-            or len(st.session_state.last_result_raw) < 200
-        ):
+        # Detect placeholder/shorthand output variants
+        placeholder_phrases = [
+            "[As above]", "[See above]", "[Insert]", "[The above",
+            "(The above", "(As above", "as described above",
+            "the executive memo above", "the analysis above",
+            "refer to the above", "please see above"
+        ]
+        has_placeholder = any(
+            p.lower() in st.session_state.last_result_raw.lower()
+            for p in placeholder_phrases
+        )
+        if has_placeholder or len(st.session_state.last_result_raw) < 300:
             st.warning(
-                "⚠️ The memo appears incomplete or contains placeholder text. "
-                "Try re-running the analysis."
+                "⚠️ The memo output appears to reference prior content instead of "
+                "writing in full. Please re-run the analysis — this sometimes happens "
+                "when the model tries to be concise. It will write the full memo on retry."
             )
 
         # Focus badges
