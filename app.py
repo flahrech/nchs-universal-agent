@@ -28,7 +28,7 @@ STRATEGIC_FOCUS_AREAS = [
 ]
 
 DEPTH_OPTIONS = {
-    "⚡ Executive Brief": {
+    "Executive Brief": {
         "label": "Fast, high-level strategic overview",
         "search_depth": "surface",
         "instruction": (
@@ -37,7 +37,7 @@ DEPTH_OPTIONS = {
             "Limit each section to 2-3 key points. Total output should be scannable in under 5 minutes."
         )
     },
-    "📊 Standard Analysis": {
+    "Standard Analysis": {
         "label": "Balanced depth with key data points",
         "search_depth": "standard",
         "instruction": (
@@ -46,7 +46,7 @@ DEPTH_OPTIONS = {
             "Each section should be substantive but focused — 3-5 paragraphs or equivalent."
         )
     },
-    "🔬 Deep Dive": {
+    "Deep Dive": {
         "label": "Comprehensive research with full granularity",
         "search_depth": "deep",
         "instruction": (
@@ -60,7 +60,7 @@ DEPTH_OPTIONS = {
 }
 
 DATA_EMPHASIS_OPTIONS = {
-    "📋 Programs & Initiatives": {
+    "Programs & Initiatives": {
         "label": "Focus on what peers are doing",
         "instruction": (
             "Emphasize qualitative findings: named programs, strategic initiatives, partnerships, "
@@ -68,7 +68,7 @@ DATA_EMPHASIS_OPTIONS = {
             "Numbers should support the narrative, not lead it."
         )
     },
-    "📈 Quantitative Metrics": {
+    "Quantitative Metrics": {
         "label": "Focus on numbers, benchmarks & thresholds",
         "instruction": (
             "Emphasize hard data: specific percentages, rates, scores, dollar amounts, timeframes, "
@@ -78,7 +78,7 @@ DATA_EMPHASIS_OPTIONS = {
             "Timeliness metrics, wait times, throughput rates, and performance targets are especially valuable."
         )
     },
-    "⚖️ Both — Full Picture": {
+    "Both - Full Picture": {
         "label": "Programs + metrics combined",
         "instruction": (
             "Provide equal weight to qualitative programs and quantitative metrics. "
@@ -105,8 +105,8 @@ def init_session_state():
         "last_primary_focus": "",
         "last_secondary_focus": [],
         "last_topic": "",
-        "last_depth": "📊 Standard Analysis",
-        "last_data_emphasis": "⚖️ Both — Full Picture",
+        "last_depth": "Standard Analysis",
+        "last_data_emphasis": "Both - Full Picture",
         "dynamic_followups": [],
         "sources": [],
         "generating_followups": False,
